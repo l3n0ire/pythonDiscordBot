@@ -59,19 +59,19 @@ def getAll():
             # table = Manage.addToTable(table, task, course)
     return dataList
 
-@client.command()
-async def getinfo(ctx):
-    embed = discord.Embed(
-        title = "Commands",
-        colour = discord.Colour.blue()
-    )
+# @client.command()
+# async def getinfo(ctx):
+#     embed = discord.Embed(
+#         title = "Commands",
+#         colour = discord.Colour.blue()
+#     )
 
-    embed.add_field(name='.all', value='displays all tasks', inline=False)
-    embed.add_field(name='.today', value='displays tasks due in the future', inline=False)
+#     embed.add_field(name='.all', value='displays all tasks', inline=False)
+#     embed.add_field(name='.today', value='displays tasks due in the future', inline=False)
 
-    await ctx.send(embed=embed)
+#     await ctx.send(embed=embed)
 
-@client.command()
+@client.command(brief='Displays all tasks')
 async def all(ctx):
     data = getAll()
     eList = list()
@@ -95,7 +95,7 @@ async def all(ctx):
     for embed in eList:
         await ctx.send(embed=embed)        
 
-@client.command()
+@client.command(brief='displays all tasks due today')
 async def today(ctx):
     data = getTasksForDay()
     
