@@ -4,3 +4,4 @@ beautifultable
 datetime
 termcolor
 colorama
+pymongo
