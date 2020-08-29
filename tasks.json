@@ -1,0 +1,64 @@
+{
+    "MATB24": [
+        {
+            "description": "Quiz 1",
+            "dueDate": "29/05/20 12:00",
+            "status": "COMPLETE"
+        },
+        {
+            "description": "Homework",
+            "dueDate": "23/10/20 23:59",
+            "status": "COMPLETE"
+        }
+    ],
+    "CSCB07": [
+        {
+            "description": "Assignment 0",
+            "dueDate": "29/05/20 23:59",
+            "status": "COMPLETE"
+        },
+        {
+            "description": "Lab 2",
+            "dueDate": "29/05/20 23:59",
+            "status": "COMPLETE"
+        },
+        {
+            "description": "Daily scrum meeting",
+            "dueDate": "27/07/20 11:57",
+            "status": "COMPLETE"
+        }
+    ],
+    "VPMA93": [
+        {
+            "description": "Journal 2",
+            "dueDate": "31/05/20 23:59",
+            "status": "COMPLETE"
+        }
+    ],
+    "MATB41": [],
+    "ANTA01": [],
+    "PHYA10": [],
+    "COPD10": [],
+    "MATA31": [],
+    "MGEA01": [],
+    "CSCA08": [],
+    "CSCA67": [],
+    "COPB51": [],
+    "CSCA48": [
+        {
+            "description": "Exercise 1",
+            "dueDate": "12/01/20 23:59",
+            "status": "COMPLETE"
+        }
+    ],
+    "MATA22": [],
+    "MATA37": [],
+    "CSCB36": [],
+    "MGEA05": [
+        {
+            "description": "Exam",
+            "dueDate": "23/12/21 23:59",
+            "status": "INCOMPLETE"
+        }
+    ]
+}
