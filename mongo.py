@@ -5,6 +5,9 @@ cluster = MongoClient("mongodb+srv://colincool100:colinspassword@manage.wwmlv.mo
 db = cluster["Manage"]
 collection = db["Tasks"]
 
+def addMongo(course,description):
+    collection.insert_one({"courseCode":course,"description":description})
+
 def printMongo(course):
     # results is an array
     output = ""

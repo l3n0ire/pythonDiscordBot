@@ -24,12 +24,6 @@ async def on_ready():
     # When the bot has everything it needs, it is ready
     print('Bot is ready.')
 
-@client.event
-async def on_message(message):
-    if message.content=="mongo":
-        output = mongo.printMongo("ALL")
-        await message.channel.send(output)
-
 # @client.event
 # async def on_member_join(member):
 #     print(f'{member} has joined a server.')
@@ -77,6 +71,15 @@ def getAll():
 #     embed.add_field(name='.today', value='displays tasks due in the future', inline=False)
 
 #     await ctx.send(embed=embed)
+
+@client.command(brief='Gets reminders from Mongodb (ALL for all reminders)')
+async def get(ctx, course):
+    output = mongo.printMongo(course)
+    await ctx.send(output)
+
+@client.command(brief="Add course to Mongodb")
+async def add(ctx, course, description):
+    mongo.addMongo(course,description)
 
 @client.command(brief='Displays all tasks')
 async def all(ctx):
