@@ -6,18 +6,7 @@ cluster = MongoClient("mongodb+srv://colincool100:colinspassword@manage.wwmlv.mo
 db = cluster["Manage"]
 collection = db["Courses"]
 
-courseSchema = {"$jsonSchema":
-  {
-    "bsonType": "object",
-    "required":["courseCode","tasks"],
-    "properties":{
-        "courseCode":{
-            "bsonType":"string",
-            "description": "must be a string and is required"
-        },
-        "tasks":{
-            "bsonType": "array",
-            "items": {
+taskBody = {
                 "bsonType":"object",
                 "required": [ "desc", "dueDate",],
                 "properties":{
@@ -33,21 +22,52 @@ courseSchema = {"$jsonSchema":
                     "bsonType": "bool",
                     "description": "must be a boolean and is required"
                     }
-                }
+            }
+}
+taskSchema = {"$jsonSchema":taskBody}
+
+courseSchema = {"$jsonSchema":
+  {
+    "bsonType": "object",
+    "required":["courseCode","tasks"],
+    "properties":{
+        "courseCode":{
+            "bsonType":"string",
+            "description": "must be a string and is required"
+        },
+        "tasks":{
+            "bsonType": "array",
+            "items": taskBody,
             }
         }
     }
   }
-}
+
+
 
 def addMongo(course,description,dueDate):
-    cmd =OrderedDict([('collMod', 'Courses'),
-        ('validator', courseSchema),
-        ('validationLevel', 'moderate')])
-    db.command(cmd)
-    collection.insert_one({"courseCode":course,
-    "tasks":[{"desc":description, "dueDate":dueDate ,"status":False}]})
-    print("added")
+    courseObject = collection.find({"courseCode":course})
+    print(collection.count_documents({"courseCode":course}))
+    
+    if(collection.count_documents({"courseCode":course})==0):
+        cmd =OrderedDict([('collMod', 'Courses'),
+            ('validator', courseSchema),
+            ('validationLevel', 'moderate')])
+        db.command(cmd)
+        collection.insert_one({"courseCode":course,
+        "tasks":[{"desc":description, "dueDate":dueDate ,"status":False}]})
+        print("added")
+    elif(collection.count_documents({"courseCode":course})==1):
+        cmd =OrderedDict([('collMod', 'Courses'),
+            ('validator', taskSchema),
+            ('validationLevel', 'moderate')])
+        db.command(cmd)
+        collection.update_one({"courseCode":course},{"$push":
+        {"tasks":{"desc":description, "dueDate":dueDate ,"status":False}}})
+        print("added")
+
+
+        
 
 def printMongo(course):
     # results is an array
