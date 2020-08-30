@@ -30,16 +30,17 @@ def readFile():
     return data
 
 # def getTasksForDay():
-    # data = readFile()
-    # dataList = list()
-    # for course in data.keys():
-    #     for task in data[course]:
-    #         if datetime.datetime.now() < datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M"):
-    #             date = datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M")
-    #             # table.rows.append([course, task['description'], date.strftime("%d/%m/%y"), date.strftime("%H:%M"), task["status"]])
-    #             d = {'course': course, 'desc': task['description'], 'due': date.strftime("%d/%m/%y") + ' ' + date.strftime("%H:%M"), 'status': task['status']}
-    #             dataList.append(d)
-    # return dataList
+#     data = readFile()
+#     dataList = list()
+#     for course in data.keys():
+#         for task in data[course]:
+#             if datetime.datetime.now() < datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M"):
+#                 date = datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M")
+#                 # table.rows.append([course, task['description'], date.strftime("%d/%m/%y"), date.strftime("%H:%M"), task["status"]])
+#                 d = {'course': course, 'desc': task['description'], 'due': date.strftime("%d/%m/%y") + ' ' + date.strftime("%H:%M"), 'status': task['status']}
+#                 dataList.append(d)
+#     return dataList
+        
 
 def getAll():
     data = readFile()
@@ -80,7 +81,7 @@ def createEmbed(course, description, due, status):
         colour = c
     )
 
-    embed.add_field(name='Due', value=d['due'], inline=False)
+    embed.add_field(name='Due', value=due, inline=False)
     return embed
 
 @client.command(brief='Displays all tasks')
@@ -89,7 +90,7 @@ async def all(ctx):
     eList = list()
 
     for d in data:
-        embed = createEmbed(d['course'], d['desc'], d['due'], d['status'])
+        embed = createEmbed(d['course'], d['desc'], d['dueDate'], d['status'])
         eList.append(embed)
     
     for embed in eList:
@@ -97,15 +98,14 @@ async def all(ctx):
 
 @client.command(brief='displays all tasks due today')
 async def today(ctx):
-    data = getTasksForDay()
+    data = mongo.getDataFromMongo('ALL')
+    embedList = list()
+    for course in data:
+        for task in course["tasks"]:
+            embed = createEmbed(course['courseCode'], task['desc'], task['dueDate'], task['status'])
+            embedList.append(embed)
     
-    eList = list()
-
-    for d in data:
-        embed = createEmbed()
-        eList.append(embed)
-    
-    for embed in eList:
+    for embed in embedList:
         await ctx.send(embed=embed)
         
 
@@ -123,4 +123,3 @@ async def today(ctx):
 # | Course | Description | Due Date | Due Time |  Status  |
 # | MGEA05 |    Exam     | 23/12/21 |  23:59   | COMPLETE |
 client.run(token)
-
