@@ -5,7 +5,7 @@ from collections import OrderedDict
 cluster = MongoClient(
     "mongodb+srv://colincool100:colinspassword@manage.wwmlv.mongodb.net/Courses?retryWrites=true&w=majority")
 db = cluster["Manage"]
-collection = db["Courses"]
+collection = db["Users"]
 
 taskBody = {
                 "bsonType": "object",
