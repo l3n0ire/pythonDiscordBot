@@ -24,13 +24,6 @@ async def on_ready():
     # When the bot has everything it needs, it is ready
     print('Bot is ready.')
 
-# @client.event
-# async def on_member_join(member):
-#     print(f'{member} has joined a server.')
-
-# @client.event
-# async def on_member_remove(member):
-#     print(f'{member} has left a server.')
 def readFile():
     with open("tasks.json") as f:
         data = json.load(f)
@@ -57,20 +50,7 @@ def getAll():
             date = datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M")
             d = {'course': course, 'desc': task['description'], 'due': date.strftime("%d/%m/%y") + ' ' + date.strftime("%H:%M"), 'status': task['status']}
             dataList.append(d)
-            # table = Manage.addToTable(table, task, course)
     return dataList
-
-# @client.command()
-# async def getinfo(ctx):
-#     embed = discord.Embed(
-#         title = "Commands",
-#         colour = discord.Colour.blue()
-#     )
-
-#     embed.add_field(name='.all', value='displays all tasks', inline=False)
-#     embed.add_field(name='.today', value='displays tasks due in the future', inline=False)
-
-#     await ctx.send(embed=embed)
 
 @client.command(brief='Gets reminders from Mongodb (ALL for all reminders)')
 async def get(ctx, course):
@@ -81,25 +61,27 @@ async def get(ctx, course):
 async def add(ctx, course, description):
     mongo.addMongo(course,description)
 
+def createEmbed(course, description, due, status):
+    if status == "COMPLETE":
+        c = discord.Colour.green()
+    else:
+        c = discord.Colour.red()
+    embed = discord.Embed(
+        title = course,
+        description = description,
+        colour = c
+    )
+
+    embed.add_field(name='Due', value=d['due'], inline=False)
+    return embed
+
 @client.command(brief='Displays all tasks')
 async def all(ctx):
     data = getAll()
     eList = list()
 
     for d in data:
-        if d['status'] == 'COMPLETE':
-            c = discord.Colour.green()
-        else:
-            c = discord.Colour.red()
-        embed = discord.Embed(
-            title = d['course'],
-            description = d['desc'],
-            
-            colour = c
-        )
-
-        embed.add_field(name='Due', value=d['due'], inline=False)
-        # embed.add_field(name='Status', value=d['status'], inline=False)
+        embed = createEmbed(d['course'], d['desc'], d['due'], d['status'])
         eList.append(embed)
     
     for embed in eList:
@@ -112,19 +94,7 @@ async def today(ctx):
     eList = list()
 
     for d in data:
-        if d['status'] == 'COMPLETE':
-            c = discord.Colour.green()
-        else:
-            c = discord.Colour.red()
-        embed = discord.Embed(
-            title = d['course'],
-            description = d['desc'],
-            
-            colour = c
-        )
-
-        embed.add_field(name='Due', value=d['due'], inline=False)
-        # embed.add_field(name='Status', value=d['status'], inline=False)
+        embed = createEmbed()
         eList.append(embed)
     
     for embed in eList:
