@@ -65,9 +65,12 @@ def addMongo(course,description,dueDate):
         collection.update_one({"courseCode":course},{"$push":
         {"tasks":{"desc":description, "dueDate":dueDate ,"status":False}}})
         print("added")
-
-
         
+def getDataFromMongo(course):
+    if course == "ALL":
+        return collection.find({})
+    elif course!="":
+        return collection.find({"courseCode":course})
 
 def printMongo(course):
     # results is an array
