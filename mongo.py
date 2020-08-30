@@ -40,29 +40,32 @@ courseSchema = {"$jsonSchema":
   }
 }
 
-def addMongo(course,description):
+def addMongo(course,description,dueDate):
     cmd =OrderedDict([('collMod', 'Courses'),
         ('validator', courseSchema),
         ('validationLevel', 'moderate')])
     db.command(cmd)
-    try:
-        collection.insert_one({"courseCode":course,
-        "tasks":[{"desc":description, "dueDate":"today" ,"status":False}]})
-    except:
-        print("oof it didnt work")
+    collection.insert_one({"courseCode":course,
+    "tasks":[{"desc":description, "dueDate":dueDate ,"status":False}]})
+    print("added")
 
 def printMongo(course):
     # results is an array
     output = ""
     if course == "ALL":
-        results =collection.find({})
-        for result in results:
-            output=output+" "+result["courseCode"]+ ": "+result["description"]
+        courses =collection.find({})
+        for courseElement in courses:
+            output=output+courseElement["courseCode"]+": "
+            for task in courseElement["tasks"]:
+                output=output+task["desc"]+" "
     elif course !="":
         targetCourse = collection.find({"courseCode":course})
         output=course+": "
-        for task in targetCourse.tasks:
-            output=output+" "+task["desc"]
+        # there should only be one course with the name course
+        # but mongodb makes me do it this way
+        for courseElement in targetCourse:
+            for task in courseElement["tasks"]:
+                output=output+" "+task["desc"]
     
     # gives back json object
     
