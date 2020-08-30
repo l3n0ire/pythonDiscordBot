@@ -29,17 +29,17 @@ def readFile():
         data = json.load(f)
     return data
 
-def getTasksForDay():
-    data = readFile()
-    dataList = list()
-    for course in data.keys():
-        for task in data[course]:
-            if datetime.datetime.now() < datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M"):
-                date = datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M")
-                # table.rows.append([course, task['description'], date.strftime("%d/%m/%y"), date.strftime("%H:%M"), task["status"]])
-                d = {'course': course, 'desc': task['description'], 'due': date.strftime("%d/%m/%y") + ' ' + date.strftime("%H:%M"), 'status': task['status']}
-                dataList.append(d)
-    return dataList
+# def getTasksForDay():
+    # data = readFile()
+    # dataList = list()
+    # for course in data.keys():
+    #     for task in data[course]:
+    #         if datetime.datetime.now() < datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M"):
+    #             date = datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M")
+    #             # table.rows.append([course, task['description'], date.strftime("%d/%m/%y"), date.strftime("%H:%M"), task["status"]])
+    #             d = {'course': course, 'desc': task['description'], 'due': date.strftime("%d/%m/%y") + ' ' + date.strftime("%H:%M"), 'status': task['status']}
+    #             dataList.append(d)
+    # return dataList
 
 def getAll():
     data = readFile()
@@ -60,6 +60,10 @@ async def get(ctx, course):
 @client.command(brief="Add course to Mongodb")
 async def add(ctx, course, description):
     mongo.addMongo(course,description)
+
+@client.command(brief="Remove course from Mongodb")
+async def remove(ctx, course, description):
+    mongo.removeMongo(course, description)
 
 def createEmbed(course, description, due, status):
     if status == "COMPLETE":
