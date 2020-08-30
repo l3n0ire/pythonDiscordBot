@@ -58,8 +58,12 @@ async def get(ctx, course):
     await ctx.send(output)
 
 @client.command(brief="Add course to Mongodb")
-async def add(ctx, course, description):
-    mongo.addMongo(course,description)
+async def add(ctx, course, description,dueDate):
+    try:
+        mongo.addMongo(course,description,dueDate)
+        await ctx.send("Successfully added "+course+" Description"+" due on "+dueDate)
+    except:
+        await ctx.send("FAILED! Could not add course")
 
 @client.command(brief="Remove course from Mongodb")
 async def remove(ctx, course, description):
