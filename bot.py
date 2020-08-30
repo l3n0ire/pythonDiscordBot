@@ -100,12 +100,13 @@ async def all(ctx):
 
 @client.command(brief='displays all tasks due today')
 async def today(ctx):
-    data = mongo.getDataFromMongo('ALL')
+    data = mongo.getDataFromMongo(ctx.message.author.name)
     embedList = list()
-    for course in data:
-        for task in course["tasks"]:
-            embed = createEmbed(course['courseCode'], task['desc'], task['dueDate'], task['status'])
-            embedList.append(embed)
+    for user in data:
+        for course in user["courses"]:
+            for task in course["tasks"]:
+                embed = createEmbed(course['courseCode'], task['desc'], task['dueDate'], task['status'])
+                embedList.append(embed)
     
     for embed in embedList:
         await ctx.send(embed=embed)

@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from collections import OrderedDict
 
 cluster = MongoClient(
-    "mongodb+srv://colincool100:colinspassword@manage.wwmlv.mongodb.net/Courses?retryWrites=true&w=majority")
+    "mongodb+srv://Mitra:mitrapassword@manage.wwmlv.mongodb.net/Courses?retryWrites=true&w=majority")
 db = cluster["Manage"]
 collection = db["Users"]
 
@@ -90,11 +90,9 @@ def addMongo(user, course, description, dueDate):
         {"tasks": {"desc": description, "dueDate": dueDate, "status": False}}})
         print("added")
 
-def getDataFromMongo(course):
-    if course == "ALL":
-        return collection.find({})
-    elif course != "":
-        return collection.find({"courseCode": course})
+def getDataFromMongo(user):
+    if user != "":
+        return collection.find({"name": user})
 
 def printMongo(course):
     # results is an array
