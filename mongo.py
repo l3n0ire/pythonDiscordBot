@@ -2,14 +2,15 @@ import pymongo
 from pymongo import MongoClient
 from collections import OrderedDict
 
-cluster = MongoClient("mongodb+srv://colincool100:colinspassword@manage.wwmlv.mongodb.net/Courses?retryWrites=true&w=majority")
+cluster = MongoClient(
+    "mongodb+srv://colincool100:colinspassword@manage.wwmlv.mongodb.net/Courses?retryWrites=true&w=majority")
 db = cluster["Manage"]
 collection = db["Courses"]
 
 taskBody = {
-                "bsonType":"object",
-                "required": [ "desc", "dueDate",],
-                "properties":{
+                "bsonType": "object",
+                "required": ["desc", "dueDate", ],
+                "properties": {
                     "desc": {
                     "bsonType": "string",
                     "description": "must be a string and is required"
@@ -24,72 +25,95 @@ taskBody = {
                     }
             }
 }
-taskSchema = {"$jsonSchema":taskBody}
+taskSchema = {"$jsonSchema": taskBody}
 
-courseSchema = {"$jsonSchema":
-  {
+courseBody = {
     "bsonType": "object",
-    "required":["courseCode","tasks"],
-    "properties":{
-        "courseCode":{
-            "bsonType":"string",
+    "required": ["courseCode", "tasks"],
+    "properties": {
+        "courseCode": {
+            "bsonType": "string",
             "description": "must be a string and is required"
         },
-        "tasks":{
+        "tasks": {
             "bsonType": "array",
             "items": taskBody,
             }
         }
+}
+courseSchema = {"$jsonSchema": courseBody}
+
+userSchema = {"$jsonSchema":
+    {
+        "bsonType": "object",
+        "required": ["name", "courses"],
+        "properties": {
+            "name": {
+                "bsonType": "string",
+                "description": "must be string and is required"
+            },
+            "courses": {
+                "bsonType": "array",
+                "items": courseBody,
+            }
+        }
     }
-  }
+}
 
 
+def addMongo(user, course, description, dueDate):
+    courseObject = collection.find({"courseCode": course})
+    print(collection.count_documents({"courseCode": course}))
 
-def addMongo(course,description,dueDate):
-    courseObject = collection.find({"courseCode":course})
-    print(collection.count_documents({"courseCode":course}))
-    
-    if(collection.count_documents({"courseCode":course})==0):
-        cmd =OrderedDict([('collMod', 'Courses'),
+    if(collection.count_documents({"name": user}) == 0):
+        cmd = OrderedDict([('collMod', 'Users'),
+        ('validator', userSchema),
+        ('validationLevel', 'moderate')])
+        db.command(cmd)
+        collection.insert_one({"name": user,
+        "courses": [{"courseCode": course, "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]}]})
+        print('added')
+    elif(collection.count_documents({"courseCode": course}) == 0):
+        cmd= OrderedDict([('collMod', 'Courses'),
             ('validator', courseSchema),
             ('validationLevel', 'moderate')])
         db.command(cmd)
-        collection.insert_one({"courseCode":course,
-        "tasks":[{"desc":description, "dueDate":dueDate ,"status":False}]})
+        collection.insert_one({"courseCode": course,
+        "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]})
         print("added")
-    elif(collection.count_documents({"courseCode":course})==1):
-        cmd =OrderedDict([('collMod', 'Courses'),
+    elif(collection.count_documents({"courseCode": course}) == 1):
+        cmd= OrderedDict([('collMod', 'Courses'),
             ('validator', taskSchema),
             ('validationLevel', 'moderate')])
         db.command(cmd)
-        collection.update_one({"courseCode":course},{"$push":
-        {"tasks":{"desc":description, "dueDate":dueDate ,"status":False}}})
+        collection.update_one({"courseCode": course}, {"$push":
+        {"tasks": {"desc": description, "dueDate": dueDate, "status": False}}})
         print("added")
-        
+
 def getDataFromMongo(course):
     if course == "ALL":
         return collection.find({})
-    elif course!="":
-        return collection.find({"courseCode":course})
+    elif course != "":
+        return collection.find({"courseCode": course})
 
 def printMongo(course):
     # results is an array
     output = ""
     if course == "ALL":
-        courses =collection.find({})
+        courses= collection.find({})
         for courseElement in courses:
-            output=output+courseElement["courseCode"]+": "
+            output= output+courseElement["courseCode"]+": "
             for task in courseElement["tasks"]:
-                output=output+task["desc"]+" "
-    elif course !="":
-        targetCourse = collection.find({"courseCode":course})
-        output=course+": "
+                output= output+task["desc"]+" "
+    elif course != "":
+        targetCourse= collection.find({"courseCode": course})
+        output= course+": "
         # there should only be one course with the name course
         # but mongodb makes me do it this way
         for courseElement in targetCourse:
             for task in courseElement["tasks"]:
-                output=output+" "+task["desc"]
-    
+                output= output+" "+task["desc"]
+
     # gives back json object
-    
+
     return output
