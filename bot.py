@@ -58,12 +58,6 @@ def getAll():
     return dataList
 
 
-@client.command(brief='Gets reminders from Mongodb (ALL for all reminders)')
-async def get(ctx, course):
-    output = mongo.printMongo(course)
-    await ctx.send(output)
-
-
 @client.command(brief="Add course to Mongodb")
 async def add(ctx, course, description, dueDate):
     user = ctx.message.author.name
