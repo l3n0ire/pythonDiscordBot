@@ -1,3 +1,4 @@
+import os
 import discord
 import manage
 from discord.ext import commands
@@ -5,17 +6,17 @@ from beautifultable import BeautifulTable
 import datetime
 import json
 import mongo
+import datetime
 
 # load env variables
 from dotenv import load_dotenv
 load_dotenv()
 
 # get token from env variables
-import os
 token = os.environ.get("bot_token")
 
 
-client = commands.Bot(command_prefix = '.')
+client = commands.Bot(command_prefix='.')
 m = manage.Manage()
 
 
@@ -23,6 +24,7 @@ m = manage.Manage()
 async def on_ready():
     # When the bot has everything it needs, it is ready
     print('Bot is ready.')
+
 
 def readFile():
     with open("tasks.json") as f:
@@ -40,7 +42,7 @@ def readFile():
 #                 d = {'course': course, 'desc': task['description'], 'due': date.strftime("%d/%m/%y") + ' ' + date.strftime("%H:%M"), 'status': task['status']}
 #                 dataList.append(d)
 #     return dataList
-        
+
 
 def getAll():
     data = readFile()
@@ -48,69 +50,80 @@ def getAll():
 
     for course in data.keys():
         for task in data[course]:
-            date = datetime.datetime.strptime(task["dueDate"], "%d/%m/%y %H:%M")
-            d = {'course': course, 'desc': task['description'], 'due': date.strftime("%d/%m/%y") + ' ' + date.strftime("%H:%M"), 'status': task['status']}
+            date = datetime.datetime.strptime(
+                task["dueDate"], "%d/%m/%y %H:%M")
+            d = {'course': course, 'desc': task['description'], 'due': date.strftime(
+                "%d/%m/%y") + ' ' + date.strftime("%H:%M"), 'status': task['status']}
             dataList.append(d)
     return dataList
+
 
 @client.command(brief='Gets reminders from Mongodb (ALL for all reminders)')
 async def get(ctx, course):
     output = mongo.printMongo(course)
     await ctx.send(output)
 
-@client.command(brief="Add course to Mongodb")
-async def add(ctx, course, description,dueDate):
-    user = ctx.message.author.name
-    print(user)
-    #try:
-    mongo.addMongo(user, course,description,dueDate)
-       # await ctx.send("Successfully added for " + user + " in " +course+" Description"+" due on "+dueDate)
-    #except:
-       # await ctx.send("FAILED! Could not add course")
 
-@client.command(brief="Remove course from Mongodb")
+@client.command(brief="Add course to Mongodb")
+async def add(ctx, course, description, dueDate):
+    user = ctx.message.author.name
+    print(dueDate)
+    try:
+        datetime.datetime.strptime(dueDate, "%d/%m/%y %H:%M")
+    except ValueError:
+        await ctx.send("FAILED! Date is not in the correct format.")
+        return
+    print(user)
+    try:
+        mongo.addMongo(user, course, description, dueDate)
+        await ctx.send("Successfully added for " + user + " in " + course+" Description"+" due on "+dueDate)
+    except:
+       await ctx.send("FAILED! Could not add course")
+
+@ client.command(brief="Remove course from Mongodb")
 async def remove(ctx, course, description):
     mongo.removeMongo(course, description)
 
 def createEmbed(course, description, due, status):
     if status == "COMPLETE":
-        c = discord.Colour.green()
+        c=discord.Colour.green()
     else:
-        c = discord.Colour.red()
-    embed = discord.Embed(
-        title = course,
-        description = description,
-        colour = c
+        c=discord.Colour.red()
+    embed=discord.Embed(
+        title=course,
+        description=description,
+        colour=c
     )
 
     embed.add_field(name='Due', value=due, inline=False)
     return embed
 
-@client.command(brief='Displays all tasks')
+@ client.command(brief='Displays all tasks')
 async def all(ctx):
-    data = getAll()
-    eList = list()
+    data=getAll()
+    eList=list()
 
     for d in data:
-        embed = createEmbed(d['course'], d['desc'], d['dueDate'], d['status'])
+        embed=createEmbed(d['course'], d['desc'], d['dueDate'], d['status'])
         eList.append(embed)
-    
-    for embed in eList:
-        await ctx.send(embed=embed)        
 
-@client.command(brief='displays all tasks due today')
+    for embed in eList:
+        await ctx.send(embed=embed)
+
+@ client.command(brief='displays all tasks due today')
 async def today(ctx):
-    data = mongo.getDataFromMongo(ctx.message.author.name)
-    embedList = list()
+    data=mongo.getDataFromMongo(ctx.message.author.name)
+    embedList=list()
     for user in data:
         for course in user["courses"]:
             for task in course["tasks"]:
-                embed = createEmbed(course['courseCode'], task['desc'], task['dueDate'], task['status'])
+                embed=createEmbed(
+                    course['courseCode'], task['desc'], task['dueDate'], task['status'])
                 embedList.append(embed)
-    
+
     for embed in embedList:
         await ctx.send(embed=embed)
-        
+
 
     # embed = discord.Embed(
     #     title = 'MGEA05',
