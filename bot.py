@@ -76,13 +76,18 @@ async def add(ctx, course, description, dueDate):
     print(user)
     try:
         mongo.addMongo(user, course, description, dueDate)
-        await ctx.send("Successfully added for " + user + " in " + course+" Description"+" due on "+dueDate)
-    except:
-       await ctx.send("FAILED! Could not add course")
+        await ctx.send("Successfully added for " + user + " in " + course+" Description: "+ description+" due on "+dueDate)
+    except Exception as e:
+       print(e)
 
-@ client.command(brief="Remove course from Mongodb")
+@client.command(brief="Remove course from Mongodb")
 async def remove(ctx, course, description):
-    mongo.removeMongo(course, description)
+    user = ctx.message.author.name
+    try:
+        mongo.removeMongo(user,course, description)
+        await ctx.send("Successfully deleted Task "+ course+" "+description+" for "+user)
+    except Exception as e:
+        await ctx.send("FAILED! could not delete task with error: "+e)
 
 def createEmbed(course, description, due, status):
     if status == "COMPLETE":

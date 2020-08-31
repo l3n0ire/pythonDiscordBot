@@ -95,13 +95,19 @@ def addMongo(user, course, description, dueDate):
                            ('validationLevel', 'moderate')])
         db.command(cmd)
         # append task to tasks array
-        collection.update_one({"name": user},
-                              {"$push": {"courses.$[course].tasks": {
-                                  "desc": description, "dueDate": dueDate, "status": False}}},
+        collection.update_one({"name": user,"courses.courseCode":course},
+                              {"$push": {"courses.$[course].tasks": {"desc": description, "dueDate": dueDate, "status": False}}},
                               upsert=True,
                               array_filters=[{"course.courseCode": course}])
         print("added3")
 
+def removeMongo(user,course,description):
+    collection.update_one(
+        {"name":user,"courses.courseCode":course,"courses.tasks.desc":description},
+        {"$pull": { "courses.$[course].tasks": {"desc":description} }},
+        upsert=True,
+        array_filters=[{"course.courseCode": course}])
+    print("removed")
 
 def getDataFromMongo(user):
     if user != "":
