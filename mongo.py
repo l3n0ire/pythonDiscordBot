@@ -62,9 +62,10 @@ userSchema = {"$jsonSchema":
 
 
 def addMongo(user, course, description, dueDate):
-    courseObject = collection.find({"courseCode": course})
-    print(collection.count_documents({"courseCode": course}))
-
+    courseObject = collection.find_one({"name": user,
+    "courses.courseCode":course})
+    print(courseObject)
+    # new user
     if(collection.count_documents({"name": user}) == 0):
         cmd = OrderedDict([('collMod', 'Users'),
         ('validator', userSchema),
@@ -72,23 +73,34 @@ def addMongo(user, course, description, dueDate):
         db.command(cmd)
         collection.insert_one({"name": user,
         "courses": [{"courseCode": course, "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]}]})
-        print('added')
-    elif(collection.count_documents({"courseCode": course}) == 0):
+        print('added1')
+    # existing user new course
+    elif(collection.count_documents({"name": user}) == 1 and
+        courseObject==None):
+        # validate course
         cmd= OrderedDict([('collMod', 'Courses'),
             ('validator', courseSchema),
             ('validationLevel', 'moderate')])
         db.command(cmd)
-        collection.insert_one({"courseCode": course,
-        "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]})
-        print("added")
-    elif(collection.count_documents({"courseCode": course}) == 1):
+        # append course to courses array
+        collection.update_one({"name": user},
+        {"$push": {"courses": {"courseCode": course,
+        "tasks": [{"desc": description, "dueDate": dueDate, "status": False}] } } })
+        print("added2")
+    # existing user existing course
+    elif(collection.count_documents({"name": user}) == 1 and
+        courseObject!=None):
+        # validate task
         cmd= OrderedDict([('collMod', 'Courses'),
             ('validator', taskSchema),
             ('validationLevel', 'moderate')])
         db.command(cmd)
-        collection.update_one({"courseCode": course}, {"$push":
-        {"tasks": {"desc": description, "dueDate": dueDate, "status": False}}})
-        print("added")
+        # append task to tasks array
+        collection.update_one({"name": user},
+        {"$push": {"courses.$[course].tasks": {"desc": description, "dueDate": dueDate, "status": False} }  },
+        upsert=True,
+        array_filters=[{"course.courseCode":course} ]  )
+        print("added3")
 
 def getDataFromMongo(user):
     if user != "":
