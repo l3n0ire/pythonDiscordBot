@@ -88,7 +88,7 @@ def addMongo(user, course, description, dueDate):
                                                      "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]}}})
         print("added2")
     # existing user existing course
-    elif(collection.count_documents({"name": user}) == 0 and courseObject != None):
+    elif(userExists and courseObject != None):
         # validate task
         cmd = OrderedDict([('collMod', 'Courses'),
                            ('validator', taskSchema),
@@ -96,8 +96,8 @@ def addMongo(user, course, description, dueDate):
         db.command(cmd)
         # append task to tasks array
         collection.update_one({"name": user,"courses.courseCode":course},
-                              {"$push": {"courses.$[course].tasks": {"desc": description, "dueDate": dueDate, "status": False}}},
-                              upsert=True,
+                              {"$push": {"courses.$[course].tasks": {"desc": description, "dueDate": dueDate, "status": False } } },
+                              upsert=False,
                               array_filters=[{"course.courseCode": course}])
         print("added3")
 
@@ -105,7 +105,7 @@ def removeMongo(user,course,description):
     collection.update_one(
         {"name":user,"courses.courseCode":course,"courses.tasks.desc":description},
         {"$pull": { "courses.$[course].tasks": {"desc":description} }},
-        upsert=True,
+        upsert=False,
         array_filters=[{"course.courseCode": course}])
     print("removed")
 
