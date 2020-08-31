@@ -8,22 +8,22 @@ db = cluster["Manage"]
 collection = db["Users"]
 
 taskBody = {
-                "bsonType": "object",
+    "bsonType": "object",
                 "required": ["desc", "dueDate", ],
                 "properties": {
                     "desc": {
-                    "bsonType": "string",
-                    "description": "must be a string and is required"
+                        "bsonType": "string",
+                        "description": "must be a string and is required"
                     },
                     "dueDate": {
-                    "bsonType": "string",
-                    "description": "must be a string and is not required"
+                        "bsonType": "string",
+                        "description": "must be a string and is not required"
                     },
                     "status": {
-                    "bsonType": "bool",
-                    "description": "must be a boolean and is required"
+                        "bsonType": "bool",
+                        "description": "must be a boolean and is required"
                     }
-            }
+                }
 }
 taskSchema = {"$jsonSchema": taskBody}
 
@@ -38,91 +38,93 @@ courseBody = {
         "tasks": {
             "bsonType": "array",
             "items": taskBody,
-            }
         }
+    }
 }
 courseSchema = {"$jsonSchema": courseBody}
 
 userSchema = {"$jsonSchema":
-    {
-        "bsonType": "object",
-        "required": ["name", "courses"],
-        "properties": {
-            "name": {
-                "bsonType": "string",
-                "description": "must be string and is required"
-            },
-            "courses": {
-                "bsonType": "array",
-                "items": courseBody,
-            }
-        }
-    }
-}
+              {
+                  "bsonType": "object",
+                  "required": ["name", "courses"],
+                  "properties": {
+                      "name": {
+                          "bsonType": "string",
+                          "description": "must be string and is required"
+                      },
+                      "courses": {
+                          "bsonType": "array",
+                          "items": courseBody,
+                      }
+                  }
+              }
+              }
 
 
 def addMongo(user, course, description, dueDate):
     courseObject = collection.find_one({"name": user,
-    "courses.courseCode":course})
+                                        "courses.courseCode": course})
     print(courseObject)
+    userExists = collection.count_documents({"name": user}) == 1
     # new user
-    if(collection.count_documents({"name": user}) == 0):
+    if(not userExists):
         cmd = OrderedDict([('collMod', 'Users'),
-        ('validator', userSchema),
-        ('validationLevel', 'moderate')])
+                           ('validator', userSchema),
+                           ('validationLevel', 'moderate')])
         db.command(cmd)
         collection.insert_one({"name": user,
-        "courses": [{"courseCode": course, "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]}]})
+                               "courses": [{"courseCode": course, "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]}]})
         print('added1')
     # existing user new course
-    elif(collection.count_documents({"name": user}) == 1 and
-        courseObject==None):
+    elif(userExists and courseObject == None):
         # validate course
-        cmd= OrderedDict([('collMod', 'Courses'),
-            ('validator', courseSchema),
-            ('validationLevel', 'moderate')])
+        cmd = OrderedDict([('collMod', 'Courses'),
+                           ('validator', courseSchema),
+                           ('validationLevel', 'moderate')])
         db.command(cmd)
         # append course to courses array
         collection.update_one({"name": user},
-        {"$push": {"courses": {"courseCode": course,
-        "tasks": [{"desc": description, "dueDate": dueDate, "status": False}] } } })
+                              {"$push": {"courses": {"courseCode": course,
+                                                     "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]}}})
         print("added2")
     # existing user existing course
-    elif(collection.count_documents({"name": user}) == 1 and
-        courseObject!=None):
+    elif(collection.count_documents({"name": user}) == 0 and courseObject != None):
         # validate task
-        cmd= OrderedDict([('collMod', 'Courses'),
-            ('validator', taskSchema),
-            ('validationLevel', 'moderate')])
+        cmd = OrderedDict([('collMod', 'Courses'),
+                           ('validator', taskSchema),
+                           ('validationLevel', 'moderate')])
         db.command(cmd)
         # append task to tasks array
         collection.update_one({"name": user},
-        {"$push": {"courses.$[course].tasks": {"desc": description, "dueDate": dueDate, "status": False} }  },
-        upsert=True,
-        array_filters=[{"course.courseCode":course} ]  )
+                              {"$push": {"courses.$[course].tasks": {
+                                  "desc": description, "dueDate": dueDate, "status": False}}},
+                              upsert=True,
+                              array_filters=[{"course.courseCode": course}])
         print("added3")
+
 
 def getDataFromMongo(user):
     if user != "":
         return collection.find({"name": user})
 
+
 def printMongo(course):
     # results is an array
     output = ""
     if course == "ALL":
-        courses= collection.find({})
+        courses = collection.find({})
         for courseElement in courses:
-            output= output+courseElement["courseCode"]+": "
+            output = output+courseElement["courseCode"]+": "
             for task in courseElement["tasks"]:
-                output= output+task["desc"]+" "
+                output = output+task["desc"]+" "
     elif course != "":
-        targetCourse= collection.find({"courseCode": course})
-        output= course+": "
+        targetCourse = collection.find({"courseCode": course})
+        output = course+": "
         # there should only be one course with the name course
         # but mongodb makes me do it this way
         for courseElement in targetCourse:
             for task in courseElement["tasks"]:
-                output= output+" "+task["desc"]
+                output = output+" "+task["desc"]
 
     # gives back json object
 
