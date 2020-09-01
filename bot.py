@@ -147,26 +147,50 @@ async def today(ctx):
 # admin stuff
 @client.command(brief="Creates a new course")
 async def adminCreateCourse(ctx, courseCode):
-    admin.createCourse(courseCode)
+    try:
+        admin.createCourse(courseCode)
+        await ctx.send("Successfully added course "+courseCode)
+    except Exception as e:
+        await ctx.send("FAILED! could not add course. Error: "+e)
 
-@client.command(brief="Add a new task to a course")
+@client.command(brief="Adds a new task to a course")
 async def adminAddTask(ctx, courseCode, description, dueDate):
     try:
         datetime.datetime.strptime(dueDate, "%d/%m/%y %H:%M")
     except ValueError:
         await ctx.send("FAILED! Date is not in the correct format.")
         return
-    admin.addTask(courseCode,description,dueDate)
+    try:
+        admin.addTask(courseCode,description,dueDate)
+        await ctx.send("Successfully added \""+description+"\" due on \""+dueDate+"\" for "+courseCode)
+    except Exception as e:
+        await ctx.send("FAILED! could not add task. Error: "+e)
 
-@client.command(brief="Enrol user to a course")
+@client.command(brief="Removes a task from a course")
+async def adminRemoveTask(ctx, courseCode, description):
+    try:
+        admin.removeTask(courseCode,description)
+        await ctx.send("Successfully removed \""+description+"\" for "+courseCode)
+    except Exception as e:
+        await ctx.send("FAILED! could not remove task. Error: "+e)
+
+@client.command(brief="Enrols user to a course")
 async def adminSubscribe(ctx, courseCode):
     user = ctx.message.author
-    admin.subscribe(user.name,courseCode)
+    try:
+        admin.subscribe(user.name,courseCode)
+        await ctx.send(user.mention+" successfully enrolled in "+courseCode)
+    except Exception as e:
+        await ctx.send("FAILED! could not subscribe. Error: "+e)
 
-@client.command(brief="uenrol user to a course")
+@client.command(brief="Unenrols user froms a course")
 async def adminUnsubscribe(ctx, courseCode):
     user = ctx.message.author
-    admin.unsubscribe(user.name,courseCode)
+    try:
+        admin.unsubscribe(user.name,courseCode)
+        await ctx.send(user.mention+" successfully unenrolled from "+courseCode)
+    except Exception as e:
+        await ctx.send("FAILED! could not unsubscribe. Error: "+e)
 
 
 

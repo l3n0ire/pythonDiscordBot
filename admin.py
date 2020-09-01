@@ -65,8 +65,23 @@ def addTask(courseCode,description,dueDate):
     collection.update_one(
         {"courseCode":courseCode},
         {"$push":{"tasks":{"desc":description,"dueDate":dueDate,"status":"not complete"} }})
-
+    #add task to all subscribers
+    courseObject = collection.find_one({"courseCode":courseCode})
+    subs = courseObject["subscribers"]
+    for user in subs:
+        mongo.addMongo(user,courseCode,description,dueDate)
     print("added task")
+
+def removeTask(courseCode,description):
+    collection.update_one(
+        {"courseCode":courseCode},
+        {"$pull":{"tasks":{"desc":description} }})
+    #add task to all subscribers
+    courseObject = collection.find_one({"courseCode":courseCode})
+    subs = courseObject["subscribers"]
+    for user in subs:
+        mongo.removeMongo(user,courseCode,description)
+    print("removed task")
 
 def subscribe(user,courseCode):
     collection.update_one({"courseCode":courseCode}, {"$push":{"subscribers":user}})
