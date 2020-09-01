@@ -60,6 +60,13 @@ userSchema = {"$jsonSchema":
               }
               }
 
+def addCourse(user,course):
+    collection.update_one({"name":user},{"$push":{"courses":course}})
+    print("added course")
+
+def removeCourse(user,courseCode):
+    collection.update_one({"name":user},{"$pull":{"courses":{"courseCode":courseCode}}})
+    print("removed course")
 
 def addMongo(user, course, description, dueDate):
     courseObject = collection.find_one({"name": user,

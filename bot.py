@@ -6,6 +6,7 @@ from beautifultable import BeautifulTable
 import datetime
 import json
 import mongo
+import admin
 import datetime
 
 # load env variables
@@ -142,6 +143,31 @@ async def today(ctx):
 
     for embed in embedList:
         await ctx.send(embed=embed)
+
+# admin stuff
+@client.command(brief="Creates a new course")
+async def adminCreateCourse(ctx, courseCode):
+    admin.createCourse(courseCode)
+
+@client.command(brief="Add a new task to a course")
+async def adminAddTask(ctx, courseCode, description, dueDate):
+    try:
+        datetime.datetime.strptime(dueDate, "%d/%m/%y %H:%M")
+    except ValueError:
+        await ctx.send("FAILED! Date is not in the correct format.")
+        return
+    admin.addTask(courseCode,description,dueDate)
+
+@client.command(brief="Enrol user to a course")
+async def adminSubscribe(ctx, courseCode):
+    user = ctx.message.author
+    admin.subscribe(user.name,courseCode)
+
+@client.command(brief="uenrol user to a course")
+async def adminUnsubscribe(ctx, courseCode):
+    user = ctx.message.author
+    admin.unsubscribe(user.name,courseCode)
+
 
 
     # embed = discord.Embed(
