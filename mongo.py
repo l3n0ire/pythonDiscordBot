@@ -20,8 +20,8 @@ taskBody = {
                         "description": "must be a string and is not required"
                     },
                     "status": {
-                        "bsonType": "bool",
-                        "description": "must be a boolean and is required"
+                        "bsonType": "string",
+                        "description": "must be a string and is required"
                     }
                 }
 }
@@ -73,7 +73,7 @@ def addMongo(user, course, description, dueDate):
                            ('validationLevel', 'moderate')])
         db.command(cmd)
         collection.insert_one({"name": user,
-                               "courses": [{"courseCode": course, "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]}]})
+                               "courses": [{"courseCode": course, "tasks": [{"desc": description, "dueDate": dueDate, "status": "not complete"}]}]})
         print('added1')
     # existing user new course
     elif(userExists and courseObject == None):
@@ -85,7 +85,7 @@ def addMongo(user, course, description, dueDate):
         # append course to courses array
         collection.update_one({"name": user},
                               {"$push": {"courses": {"courseCode": course,
-                                                     "tasks": [{"desc": description, "dueDate": dueDate, "status": False}]}}})
+                                                     "tasks": [{"desc": description, "dueDate": dueDate, "status": "not complete"}]}}})
         print("added2")
     # existing user existing course
     elif(userExists and courseObject != None):
@@ -96,7 +96,7 @@ def addMongo(user, course, description, dueDate):
         db.command(cmd)
         # append task to tasks array
         collection.update_one({"name": user,"courses.courseCode":course},
-                              {"$push": {"courses.$[course].tasks": {"desc": description, "dueDate": dueDate, "status": False } } },
+                              {"$push": {"courses.$[course].tasks": {"desc": description, "dueDate": dueDate, "status": "not complete" } } },
                               upsert=False,
                               array_filters=[{"course.courseCode": course}])
         print("added3")
@@ -116,6 +116,14 @@ def editMongo(user,course,description,newDueDate):
         upsert=False,
         array_filters=[{"course.courseCode": course},{"task.desc":description}])
     print("edited")
+
+def setStatusMongo(user,course,description,status):
+    collection.update_one(
+        {"name":user,"courses.courseCode":course,"courses.tasks.desc":description},
+        {"$set": { "courses.$[course].tasks.$[task].status":status} },
+        upsert=False,
+        array_filters=[{"course.courseCode": course},{"task.desc":description}])
+    print("status changed")
 
 def getDataFromMongo(user):
     if user != "":

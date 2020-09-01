@@ -92,10 +92,20 @@ async def edit(ctx,course,description, newDueDate):
     except Exception as e:
         await ctx.send("FAILED! could not edit task. Error: "+e)
 
-
+@client.command(brief="Sets status of task (complete, in progress, not complete)")
+async def setStatus(ctx,course,description,status):
+    user = ctx.message.author.name
+    try:
+        mongo.setStatusMongo(user,course,description,status)
+        await ctx.send("Successfully set status of "+ course+" "+description+" for "+user+" to "+status)
+    except Exception as e:
+        await ctx.send("FAILED! could not set status for task. Error: "+e)
+    
 def createEmbed(course, description, due, status):
-    if status == "COMPLETE":
+    if status == "complete":
         c=discord.Colour.green()
+    elif status == "in progress":
+        c=discord.Colour.orange()
     else:
         c=discord.Colour.red()
     embed=discord.Embed(
