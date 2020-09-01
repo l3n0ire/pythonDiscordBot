@@ -58,7 +58,7 @@ def getAll():
     return dataList
 
 
-@client.command(brief="Add course to Mongodb")
+@client.command(brief="Adds a task to Mongodb")
 async def add(ctx, course, description, dueDate):
     user = ctx.message.author.name
     print(dueDate)
@@ -74,14 +74,24 @@ async def add(ctx, course, description, dueDate):
     except Exception as e:
        print(e)
 
-@client.command(brief="Remove course from Mongodb")
+@client.command(brief="Removes task from Mongodb")
 async def remove(ctx, course, description):
     user = ctx.message.author.name
     try:
         mongo.removeMongo(user,course, description)
         await ctx.send("Successfully deleted Task "+ course+" "+description+" for "+user)
     except Exception as e:
-        await ctx.send("FAILED! could not delete task with error: "+e)
+        await ctx.send("FAILED! could not delete task. Error: "+e)
+
+@client.command(brief="Edits the dueDate of a task")
+async def edit(ctx,course,description, newDueDate):
+    user = ctx.message.author.name
+    try:
+        mongo.editMongo(user,course,description,newDueDate)
+        await ctx.send("Successfully edited due date of "+ course+" "+description+" for "+user+" to "+newDueDate)
+    except Exception as e:
+        await ctx.send("FAILED! could not edit task. Error: "+e)
+
 
 def createEmbed(course, description, due, status):
     if status == "COMPLETE":

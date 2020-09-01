@@ -109,6 +109,14 @@ def removeMongo(user,course,description):
         array_filters=[{"course.courseCode": course}])
     print("removed")
 
+def editMongo(user,course,description,newDueDate):
+    collection.update_one(
+        {"name":user,"courses.courseCode":course,"courses.tasks.desc":description},
+        {"$set": { "courses.$[course].tasks.$[task].dueDate":newDueDate} },
+        upsert=False,
+        array_filters=[{"course.courseCode": course},{"task.desc":description}])
+    print("edited")
+
 def getDataFromMongo(user):
     if user != "":
         return collection.find({"name": user})
