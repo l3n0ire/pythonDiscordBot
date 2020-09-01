@@ -60,7 +60,7 @@ def getAll():
 
 @client.command(brief="Adds a task to Mongodb")
 async def add(ctx, course, description, dueDate):
-    user = ctx.message.author.name
+    user = ctx.message.author
     print(dueDate)
     try:
         datetime.datetime.strptime(dueDate, "%d/%m/%y %H:%M")
@@ -69,35 +69,35 @@ async def add(ctx, course, description, dueDate):
         return
     print(user)
     try:
-        mongo.addMongo(user, course, description, dueDate)
-        await ctx.send("Successfully added for " + user + " in " + course+" Description: "+ description+" due on "+dueDate)
+        mongo.addMongo(user.name, course, description, dueDate)
+        await ctx.send("Successfully added for " + user.mention + " in " + course+" Description: "+ description+" due on "+dueDate)
     except Exception as e:
        print(e)
 
 @client.command(brief="Removes task from Mongodb")
 async def remove(ctx, course, description):
-    user = ctx.message.author.name
+    user = ctx.message.author
     try:
-        mongo.removeMongo(user,course, description)
-        await ctx.send("Successfully deleted Task "+ course+" "+description+" for "+user)
+        mongo.removeMongo(user.name,course, description)
+        await ctx.send("Successfully deleted task \""+ course+" "+description+"\" for "+user.mention)
     except Exception as e:
         await ctx.send("FAILED! could not delete task. Error: "+e)
 
 @client.command(brief="Edits the dueDate of a task")
 async def edit(ctx,course,description, newDueDate):
-    user = ctx.message.author.name
+    user = ctx.message.author
     try:
-        mongo.editMongo(user,course,description,newDueDate)
-        await ctx.send("Successfully edited due date of "+ course+" "+description+" for "+user+" to "+newDueDate)
+        mongo.editMongo(user.name,course,description,newDueDate)
+        await ctx.send("Successfully edited due date of \""+ course+" "+description+"\" for "+user.mention+" to \""+newDueDate+"\"")
     except Exception as e:
         await ctx.send("FAILED! could not edit task. Error: "+e)
 
 @client.command(brief="Sets status of task (complete, in progress, not complete)")
 async def setStatus(ctx,course,description,status):
-    user = ctx.message.author.name
+    user = ctx.message.author
     try:
-        mongo.setStatusMongo(user,course,description,status)
-        await ctx.send("Successfully set status of "+ course+" "+description+" for "+user+" to "+status)
+        mongo.setStatusMongo(user.name,course,description,status)
+        await ctx.send("Successfully set status of \""+ course+" "+description+"\" for "+user.mention+" to \""+status+"\"")
     except Exception as e:
         await ctx.send("FAILED! could not set status for task. Error: "+e)
     
