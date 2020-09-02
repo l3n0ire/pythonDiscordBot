@@ -212,6 +212,15 @@ async def adminRemoveTask(ctx, courseCode, description):
     except Exception as e:
         await ctx.send("FAILED! could not remove task. Error: "+e)
 
+@client.command(brief="Edits a task for a course")
+async def adminEditTask(ctx, courseCode, description, newDueDate):
+    user = ctx.message.author
+    try:
+        admin.editTask(courseCode,description,newDueDate)
+        await ctx.send("Successfully edited due date of \""+ courseCode+" "+description+"\" for "+user.mention+" to \""+newDueDate+"\"")
+    except Exception as e:
+        await ctx.send("FAILED! could not remove task. Error: "+str(e))
+
 @client.command(brief="Enrols user to a course")
 async def adminSubscribe(ctx, courseCode):
     user = ctx.message.author
@@ -229,6 +238,15 @@ async def adminUnsubscribe(ctx, courseCode):
         await ctx.send(user.mention+" successfully unenrolled from "+courseCode)
     except Exception as e:
         await ctx.send("FAILED! could not unsubscribe. Error: "+e)
+
+@client.command(brief="Shows subsribers for a course")
+async def adminShowSubscribers(ctx, courseCode):
+    user = ctx.message.author
+    try:
+        await ctx.send(admin.showSubscribers(courseCode))
+    except Exception as e:
+        await ctx.send("FAILED! could not show subscribers. Error: "+str(e))
+
 
 
 

@@ -61,12 +61,23 @@ userSchema = {"$jsonSchema":
               }
 
 def addCourse(user,course):
+    # new user
+    if(collection.find_one({"name":user}) == None):
+        newUser(user)
     collection.update_one({"name":user},{"$push":{"courses":course}})
     print("added course")
 
 def removeCourse(user,courseCode):
     collection.update_one({"name":user},{"$pull":{"courses":{"courseCode":courseCode}}})
     print("removed course")
+
+def newUser(user):
+    cmd = OrderedDict([('collMod', 'Users'),
+                           ('validator', userSchema),
+                           ('validationLevel', 'moderate')])
+    db.command(cmd)
+    collection.insert_one({"name":user,"courses":[]})
+    print("created new user")
 
 def addMongo(user, course, description, dueDate):
     courseObject = collection.find_one({"name": user,

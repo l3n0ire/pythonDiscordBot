@@ -83,6 +83,20 @@ def removeTask(courseCode,description):
         mongo.removeMongo(user,courseCode,description)
     print("removed task")
 
+def editTask(courseCode,description,newDueDate):
+    collection.update_one(
+        {"courseCode":courseCode},
+        {"$set": { "tasks.$[task].dueDate":newDueDate} },
+        upsert=False,
+        array_filters=[{"task.desc":description}])
+    
+    #update task for all subscribers
+    courseObject = collection.find_one({"courseCode":courseCode})
+    subs = courseObject["subscribers"]
+    for user in subs:
+        mongo.editMongo(user,courseCode,description,newDueDate)
+    print("editedAdmin")
+
 def subscribe(user,courseCode):
     collection.update_one({"courseCode":courseCode}, {"$push":{"subscribers":user}})
     # add the course to the user
@@ -95,4 +109,14 @@ def unsubscribe(user,courseCode):
     collection.update_one({"courseCode":courseCode}, {"$pull":{"subscribers":user}})
     mongo.removeCourse(user,courseCode)
     print("unsubscribed")
+
+def showSubscribers(courseCode):
+    subs = collection.find_one({"courseCode":courseCode})["subscribers"]
+    output = courseCode+": "
+    for sub in subs:
+        output = output + sub + ", "
+    print("subs shown")
+    return output
+
+
 
