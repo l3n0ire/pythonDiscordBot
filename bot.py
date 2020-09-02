@@ -26,6 +26,44 @@ async def on_ready():
     # When the bot has everything it needs, it is ready
     print('Bot is ready.')
 
+@client.event
+async def on_raw_reaction_add(raw):
+    #the message that the user reacted to
+    courseCode=None
+    if raw.message_id == 750764988448112662:
+        if str(raw.emoji) == '🍎':
+            courseCode ='MGTA01'
+        elif str(raw.emoji) =='🍌':
+            courseCode ='VPMA93'
+        if courseCode!=None:
+            try:
+                admin.subscribe(raw.member.display_name,courseCode)
+                await client.get_channel(raw.channel_id).send(raw.member.mention+" successfully enrolled in "+courseCode)
+            except Exception as e:
+                await client.get_channel(raw.channel_id).send("FAILED! could not subscribe. Error: "+e)
+
+@client.event
+async def on_raw_reaction_remove(raw):
+    #the message that the user reacted to
+    courseCode=None
+    if raw.message_id == 750764988448112662:
+        if str(raw.emoji) == '🍎':
+            courseCode ='MGTA01'
+        elif str(raw.emoji) =='🍌':
+            courseCode ='VPMA93'
+        if courseCode!=None:
+            try:
+                user =client.get_user(raw.user_id)
+                admin.unsubscribe(user.name,courseCode)
+                await client.get_channel(raw.channel_id).send(user.mention+" successfully unenrolled from "+courseCode)
+            except Exception as e:
+                await client.get_channel(raw.channel_id).send("FAILED! could not unsubscribe. Error: "+str(e))
+        
+
+
+
+
+
 
 def readFile():
     with open("tasks.json") as f:
