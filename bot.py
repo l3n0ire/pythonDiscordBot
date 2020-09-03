@@ -111,7 +111,7 @@ async def add(ctx, course, description, dueDate):
         mongo.addMongo(user.name, course, description, dueDate)
         await ctx.send("Successfully added for " + user.mention + " in " + course+" Description: "+ description+" due on "+dueDate)
     except Exception as e:
-       print(e)
+       print("FAILED! could not delete task. Error: "+str(e))
 
 @client.command(brief="Removes task from Mongodb")
 async def remove(ctx, course, description):
@@ -120,7 +120,7 @@ async def remove(ctx, course, description):
         mongo.removeMongo(user.name,course, description)
         await ctx.send("Successfully deleted task \""+ course+" "+description+"\" for "+user.mention)
     except Exception as e:
-        await ctx.send("FAILED! could not delete task. Error: "+e)
+        await ctx.send("FAILED! could not delete task. Error: "+str(e))
 
 @client.command(brief="Edits the dueDate of a task")
 async def edit(ctx,course,description, newDueDate):
@@ -129,7 +129,7 @@ async def edit(ctx,course,description, newDueDate):
         mongo.editMongo(user.name,course,description,newDueDate)
         await ctx.send("Successfully edited due date of \""+ course+" "+description+"\" for "+user.mention+" to \""+newDueDate+"\"")
     except Exception as e:
-        await ctx.send("FAILED! could not edit task. Error: "+e)
+        await ctx.send("FAILED! could not edit task. Error: "+str(e))
 
 @client.command(brief="Sets status of task (complete, in progress, not complete)")
 async def setStatus(ctx,course,description,status):
@@ -138,7 +138,7 @@ async def setStatus(ctx,course,description,status):
         mongo.setStatusMongo(user.name,course,description,status)
         await ctx.send("Successfully set status of \""+ course+" "+description+"\" for "+user.mention+" to \""+status+"\"")
     except Exception as e:
-        await ctx.send("FAILED! could not set status for task. Error: "+e)
+        await ctx.send("FAILED! could not set status for task. Error: "+str(e))
     
 def createEmbed(course, description, due, status):
     if status == "complete":
@@ -189,7 +189,7 @@ async def adminCreateCourse(ctx, courseCode):
         admin.createCourse(courseCode)
         await ctx.send("Successfully added course "+courseCode)
     except Exception as e:
-        await ctx.send("FAILED! could not add course. Error: "+e)
+        await ctx.send("FAILED! could not add course. Error: "+str(e))
 
 @client.command(brief="Adds a new task to a course")
 async def adminAddTask(ctx, courseCode, description, dueDate):
@@ -202,7 +202,7 @@ async def adminAddTask(ctx, courseCode, description, dueDate):
         admin.addTask(courseCode,description,dueDate)
         await ctx.send("Successfully added \""+description+"\" due on \""+dueDate+"\" for "+courseCode)
     except Exception as e:
-        await ctx.send("FAILED! could not add task. Error: "+e)
+        await ctx.send("FAILED! could not add task. Error: "+str(e))
 
 @client.command(brief="Removes a task from a course")
 async def adminRemoveTask(ctx, courseCode, description):
@@ -210,7 +210,7 @@ async def adminRemoveTask(ctx, courseCode, description):
         admin.removeTask(courseCode,description)
         await ctx.send("Successfully removed \""+description+"\" for "+courseCode)
     except Exception as e:
-        await ctx.send("FAILED! could not remove task. Error: "+e)
+        await ctx.send("FAILED! could not remove task. Error: "+str(e))
 
 @client.command(brief="Edits a task for a course")
 async def adminEditTask(ctx, courseCode, description, newDueDate):
@@ -228,7 +228,7 @@ async def adminSubscribe(ctx, courseCode):
         admin.subscribe(user.name,courseCode)
         await ctx.send(user.mention+" successfully enrolled in "+courseCode)
     except Exception as e:
-        await ctx.send("FAILED! could not subscribe. Error: "+e)
+        await ctx.send("FAILED! could not subscribe. Error: "+str(e))
 
 @client.command(brief="Unenrols user froms a course")
 async def adminUnsubscribe(ctx, courseCode):
@@ -260,6 +260,10 @@ async def adminShowTasks(ctx, courseCode):
             await ctx.send(embed=embed)
     except Exception as e:
         await ctx.send("FAILED! could not show tasks. Error: "+str(e))
+
+@client.command()
+async def time(ctx):
+    await ctx.send(datetime.datetime.strftime(datetime.datetime.now(), "%d/%m/%y %H:%M"))
 
 
 
