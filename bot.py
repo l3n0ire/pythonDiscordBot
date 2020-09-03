@@ -8,6 +8,7 @@ import json
 import mongo
 import admin
 import datetime
+import time
 
 # load env variables
 from dotenv import load_dotenv
@@ -15,6 +16,10 @@ load_dotenv()
 
 # get token from env variables
 token = os.environ.get("bot_token")
+
+# set timezone
+os.environ['TZ'] = 'America/Toronto'
+time.tzset()
 
 
 client = commands.Bot(command_prefix='.')
