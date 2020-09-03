@@ -111,12 +111,25 @@ def unsubscribe(user,courseCode):
     print("unsubscribed")
 
 def showSubscribers(courseCode):
-    subs = collection.find_one({"courseCode":courseCode})["subscribers"]
-    output = courseCode+": "
-    for sub in subs:
-        output = output + sub + ", "
+    output=""
+    if courseCode == "ALL":
+        subs = collection.find({})
+    else:
+        subs = collection.find({"courseCode":courseCode})
+    for course in subs:
+        output = output+course["courseCode"]+": "
+        for sub in course["subscribers"]:
+            output = output + sub + ", "
     print("subs shown")
     return output
+
+def getTasks(courseCode):
+    if courseCode == "ALL":
+        data = collection.find({})
+    else:
+        data = collection.find({"courseCode":courseCode})
+    print("got tasks")
+    return data
 
 
 

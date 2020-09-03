@@ -239,13 +239,28 @@ async def adminUnsubscribe(ctx, courseCode):
     except Exception as e:
         await ctx.send("FAILED! could not unsubscribe. Error: "+e)
 
-@client.command(brief="Shows subsribers for a course")
+@client.command(brief="Shows subsribers for a course (ALL for all courses)")
 async def adminShowSubscribers(ctx, courseCode):
-    user = ctx.message.author
     try:
         await ctx.send(admin.showSubscribers(courseCode))
     except Exception as e:
         await ctx.send("FAILED! could not show subscribers. Error: "+str(e))
+
+@client.command(brief="Shows tasks for a course (ALL for all courses)")
+async def adminShowTasks(ctx, courseCode):
+    try:
+        data=admin.getTasks(courseCode)
+        embedList=list()
+        for course in data:
+            for task in course["tasks"]:
+                embed=createEmbed(
+                    course['courseCode'], task['desc'], task['dueDate'], task['status'])
+                embedList.append(embed)
+        for embed in embedList:
+            await ctx.send(embed=embed)
+    except Exception as e:
+        await ctx.send("FAILED! could not show tasks. Error: "+str(e))
+
 
 
 
