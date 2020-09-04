@@ -69,7 +69,7 @@ async def on_raw_reaction_remove(raw):
 @client.command()
 async def job(ctx, dt):
     newDate = datetime.datetime.strptime(dt, '%d/%m/%y %H:%M')
-    date1 = newDate - datetime.datetime.now() 
+    date1 = datetime.datetime.utcfromtimestamp(newDate.timestamp()) - datetime.datetime.utcnow() 
     timeUntilRemind = date1.total_seconds()
     await asyncio.sleep(timeUntilRemind)
     await ctx.send('hi it is now' + dt)
