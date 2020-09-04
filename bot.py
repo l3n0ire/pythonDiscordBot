@@ -8,6 +8,7 @@ import json
 import mongo
 import admin
 import datetime
+import asyncio
 import time
 
 # load env variables
@@ -18,8 +19,8 @@ load_dotenv()
 token = os.environ.get("bot_token")
 
 # set timezone
-os.environ['TZ'] = 'America/Toronto'
-time.tzset()
+# os.environ['TZ'] = 'America/Toronto'
+# time.tzset()
 
 
 client = commands.Bot(command_prefix='.')
@@ -65,10 +66,13 @@ async def on_raw_reaction_remove(raw):
                 await client.get_channel(raw.channel_id).send("FAILED! could not unsubscribe. Error: "+str(e))
         
 
-
-
-
-
+@client.command()
+async def job(ctx, dt):
+    newDate = datetime.datetime.strptime(dt, '%d/%m/%y %H:%M')
+    date1 = newDate - datetime.datetime.now() 
+    timeUntilRemind = date1.total_seconds()
+    await asyncio.sleep(timeUntilRemind)
+    await ctx.send('hi it is now' + dt)
 
 def readFile():
     with open("tasks.json") as f:
