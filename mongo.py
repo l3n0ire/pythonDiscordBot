@@ -143,9 +143,15 @@ def setStatusMongo(user,course,description,status):
         array_filters=[{"course.courseCode": course},{"task.desc":description}])
     print("status changed")
 
-def getStatusMongo(user,course,description):
+def getStatusMongo(user,courseCode,description):
     userObject =collection.find_one(
-        {"name":user,"courses.courseCode":course,"courses.tasks.desc":description})
+        {"name":user.name,"courses.courseCode":courseCode})
+    for course in userObject["courses"]:
+        if course["courseCode"] == courseCode:
+            for task in course["tasks"]:
+                if task["desc"] == description:
+                    return task["status"]
+
     
         
     

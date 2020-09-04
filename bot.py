@@ -289,11 +289,19 @@ async def adminShowTasks(ctx, courseCode):
     except Exception as e:
         await ctx.send("FAILED! could not show tasks. Error: "+str(e))
 
+@client.command()
+async def getStatus(ctx, courseCode ,description):
+    user = ctx.message.author
+    await ctx.send(mongo.getStatusMongo(user,courseCode,description))
+
 async def notify(courseCode, description, dueDate):
     subs = admin.getSubs(courseCode)
-    embed=createEmbed(courseCode, description, dueDate,"not complete")
+    
     for sub in subs:
         user = client.get_user(sub["id"])
+        status = mongo.getStatusMongo(user,courseCode,description)
+        print(status)
+        embed=createEmbed(courseCode, description, dueDate,status)
         if user.dm_channel == None:
             dm = await user.create_dm()
             await dm.send(embed=embed)
