@@ -43,10 +43,10 @@ async def on_raw_reaction_add(raw):
             courseCode ='VPMA93'
         if courseCode!=None:
             try:
-                admin.subscribe(raw.member.display_name,courseCode)
+                admin.subscribe(raw.member,courseCode)
                 await client.get_channel(raw.channel_id).send(raw.member.mention+" successfully enrolled in "+courseCode)
             except Exception as e:
-                await client.get_channel(raw.channel_id).send("FAILED! could not subscribe. Error: "+e)
+                await client.get_channel(raw.channel_id).send("FAILED! could not subscribe. Error: "+str(e))
 
 @client.event
 async def on_raw_reaction_remove(raw):
@@ -233,17 +233,17 @@ async def adminEditTask(ctx, courseCode, description, newDueDate):
 @client.command(brief="Enrols user to a course")
 async def adminSubscribe(ctx, courseCode):
     user = ctx.message.author
-    try:
-        admin.subscribe(user.name,courseCode)
-        await ctx.send(user.mention+" successfully enrolled in "+courseCode)
-    except Exception as e:
-        await ctx.send("FAILED! could not subscribe. Error: "+str(e))
+    #try:
+    admin.subscribe(user,courseCode)
+        #await ctx.send(user.mention+" successfully enrolled in "+courseCode)
+    #except Exception as e:
+        #await ctx.send("FAILED! could not subscribe. Error: "+str(e))
 
 @client.command(brief="Unenrols user froms a course")
 async def adminUnsubscribe(ctx, courseCode):
     user = ctx.message.author
     try:
-        admin.unsubscribe(user.name,courseCode)
+        admin.unsubscribe(user,courseCode)
         await ctx.send(user.mention+" successfully unenrolled from "+courseCode)
     except Exception as e:
         await ctx.send("FAILED! could not unsubscribe. Error: "+e)
@@ -269,6 +269,17 @@ async def adminShowTasks(ctx, courseCode):
             await ctx.send(embed=embed)
     except Exception as e:
         await ctx.send("FAILED! could not show tasks. Error: "+str(e))
+
+@client.command()
+async def notify(ctx, courseCode):
+    subs = admin.getSubs(courseCode)
+    for sub in subs:
+        user = client.get_user(sub["id"])
+        if user.dm_channel == None:
+            dm = await user.create_dm()
+            await dm.send("hello")
+        else:
+            await user.dm_channel.send("hello")
 
 @client.command()
 async def time(ctx):

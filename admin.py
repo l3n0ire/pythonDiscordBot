@@ -28,7 +28,22 @@ taskBody = {
                 }
 }
 taskSchema = {"$jsonSchema": taskBody}
-
+userBody = {
+    "bsonType": "object",
+                "required": ["name", "id", ],
+                "properties": {
+                    "name": {
+                        "bsonType": "string",
+                        "description": "must be a string and is required"
+                    },
+                    "id": {
+                        "bsonType": "long",
+                        "description": "must be a string and is not required"
+                    },
+                   
+                }
+}
+userSchema = {"$jsonSchema": userBody}
 courseBody = {
     "bsonType": "object",
     "required": ["courseCode", "tasks","subscribers"],
@@ -43,11 +58,9 @@ courseBody = {
         },
         "subscribers":{
             "bsonType":"array",
-            "items":{
-                "bsonType": "string",
-                "description": "must be a string and is required"
-            }
-        }
+            "items": userBody,
+        },
+        
     }
 }
 courseSchema = {"$jsonSchema": courseBody}
@@ -69,7 +82,7 @@ def addTask(courseCode,description,dueDate):
     courseObject = collection.find_one({"courseCode":courseCode})
     subs = courseObject["subscribers"]
     for user in subs:
-        mongo.addMongo(user,courseCode,description,dueDate)
+        mongo.addMongo(user["name"],courseCode,description,dueDate)
     print("added task")
 
 def removeTask(courseCode,description):
@@ -80,7 +93,7 @@ def removeTask(courseCode,description):
     courseObject = collection.find_one({"courseCode":courseCode})
     subs = courseObject["subscribers"]
     for user in subs:
-        mongo.removeMongo(user,courseCode,description)
+        mongo.removeMongo(user["name"],courseCode,description)
     print("removed task")
 
 def editTask(courseCode,description,newDueDate):
@@ -94,20 +107,26 @@ def editTask(courseCode,description,newDueDate):
     courseObject = collection.find_one({"courseCode":courseCode})
     subs = courseObject["subscribers"]
     for user in subs:
-        mongo.editMongo(user,courseCode,description,newDueDate)
+        mongo.editMongo(user["name"],courseCode,description,newDueDate)
     print("editedAdmin")
 
 def subscribe(user,courseCode):
-    collection.update_one({"courseCode":courseCode}, {"$push":{"subscribers":user}})
+    print(user.name)
+    print(user.id)
+    collection.update_one(
+        {"courseCode":courseCode},
+        {"$push":{"subscribers":{"name":user.name, "id":user.id} } } )
     # add the course to the user
     courseObject = collection.find_one({"courseCode":courseCode})
     course = {"courseCode":courseObject["courseCode"],"tasks":courseObject["tasks"]}
-    mongo.addCourse(user,course)
+    mongo.addCourse(user.name,course)
     print("subscribed")
 
 def unsubscribe(user,courseCode):
-    collection.update_one({"courseCode":courseCode}, {"$pull":{"subscribers":user}})
-    mongo.removeCourse(user,courseCode)
+    collection.update_one(
+        {"courseCode":courseCode},
+        {"$pull":{"subscribers":{"name":user.name, "id":user.id} } } )
+    mongo.removeCourse(user.name,courseCode)
     print("unsubscribed")
 
 def showSubscribers(courseCode):
@@ -119,7 +138,7 @@ def showSubscribers(courseCode):
     for course in subs:
         output = output+course["courseCode"]+": "
         for sub in course["subscribers"]:
-            output = output + sub + ", "
+            output = output + sub["name"] + ", "
     print("subs shown")
     return output
 
@@ -130,6 +149,12 @@ def getTasks(courseCode):
         data = collection.find({"courseCode":courseCode})
     print("got tasks")
     return data
+
+def getSubs(courseCode):
+    return collection.find_one({"courseCode":courseCode})["subscribers"]
+
+
+
 
 
 
