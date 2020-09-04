@@ -72,12 +72,12 @@ async def job(ctx, dt):
     await reminder(datetime, "WOW")
     await ctx.send('hi it is now ' + dt)
 
-async def reminder(dt, courseCode):
+async def reminder(dt, courseCode,description):
     newDate = datetime.datetime.strptime(dt, '%d/%m/%y %H:%M')
     date1 = datetime.datetime.utcfromtimestamp(newDate.timestamp()) - datetime.datetime.utcnow() 
     timeUntilRemind = date1.total_seconds()
     await asyncio.sleep(timeUntilRemind)
-    await notify(courseCode)
+    await notify(courseCode,description,dt)
 
 def readFile():
     with open("tasks.json") as f:
@@ -218,7 +218,7 @@ async def adminAddTask(ctx, courseCode, description, dueDate):
     try:
         admin.addTask(courseCode,description,dueDate)
         await ctx.send("Successfully added \""+description+"\" due on \""+dueDate+"\" for "+courseCode)
-        threadDict[courseCode] = {description: asyncio.Task(reminder(dueDate, courseCode))}
+        threadDict[courseCode] = {description: asyncio.Task(reminder(dueDate, courseCode,description))}
     except Exception as e:
         await ctx.send("FAILED! could not add task. Error: "+str(e))
 
@@ -237,6 +237,8 @@ async def adminEditTask(ctx, courseCode, description, newDueDate):
     try:
         admin.editTask(courseCode,description,newDueDate)
         await ctx.send("Successfully edited due date of \""+ courseCode+" "+description+"\" for "+user.mention+" to \""+newDueDate+"\"")
+        threadDict.pop(courseCode).pop(description).cancel()
+        threadDict[courseCode] = {description: asyncio.Task(reminder(newDueDate, courseCode,description))}
     except Exception as e:
         await ctx.send("FAILED! could not remove task. Error: "+str(e))
 
@@ -280,42 +282,21 @@ async def adminShowTasks(ctx, courseCode):
     except Exception as e:
         await ctx.send("FAILED! could not show tasks. Error: "+str(e))
 
-async def notify(courseCode):
+async def notify(courseCode, description, dueDate):
     subs = admin.getSubs(courseCode)
+    embed=createEmbed(courseCode, description, dueDate,"not complete")
     for sub in subs:
         user = client.get_user(sub["id"])
         if user.dm_channel == None:
             dm = await user.create_dm()
-            await dm.send("hello")
+            await dm.send(embed=embed)
         else:
-            await user.dm_channel.send("hello")
-
-@client.command()
-async def adminNotify(ctx, courseCode):
-    await notify(courseCode)
+            await user.dm_channel.send(embed=embed)
     
 
 @client.command()
 async def time(ctx):
     await ctx.send(datetime.datetime.strftime(datetime.datetime.now(), "%d/%m/%y %H:%M"))
-
-async def spam():
-        print("started")
-        await asyncio.sleep(10)
-        print("hi")
-t= None
-@client.command()
-async def start(ctx):
-    global t 
-    t= asyncio.Task(spam())
-
-@client.command()
-async def stop(ctx):
-    t.cancel()
-    print("stoped")
-
-
-
 
 
     # embed = discord.Embed(
