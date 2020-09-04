@@ -69,14 +69,15 @@ async def on_raw_reaction_remove(raw):
 
 @client.command()
 async def job(ctx, dt):
-    await reminder(datetime)
+    await reminder(datetime, "WOW")
     await ctx.send('hi it is now ' + dt)
 
-async def reminder(dt):
+async def reminder(dt, courseCode):
     newDate = datetime.datetime.strptime(dt, '%d/%m/%y %H:%M')
     date1 = datetime.datetime.utcfromtimestamp(newDate.timestamp()) - datetime.datetime.utcnow() 
     timeUntilRemind = date1.total_seconds()
     await asyncio.sleep(timeUntilRemind)
+    await notify(courseCode)
 
 def readFile():
     with open("tasks.json") as f:
@@ -204,6 +205,9 @@ async def adminCreateCourse(ctx, courseCode):
     except Exception as e:
         await ctx.send("FAILED! could not add course. Error: "+str(e))
 
+threadDict = dict()
+
+
 @client.command(brief="Adds a new task to a course")
 async def adminAddTask(ctx, courseCode, description, dueDate):
     try:
@@ -214,8 +218,7 @@ async def adminAddTask(ctx, courseCode, description, dueDate):
     try:
         admin.addTask(courseCode,description,dueDate)
         await ctx.send("Successfully added \""+description+"\" due on \""+dueDate+"\" for "+courseCode)
-        await reminder(dueDate)
-        await notify(courseCode)
+        threadDict[courseCode] = {description: asyncio.Task(reminder(dueDate, courseCode))}
     except Exception as e:
         await ctx.send("FAILED! could not add task. Error: "+str(e))
 
@@ -223,6 +226,7 @@ async def adminAddTask(ctx, courseCode, description, dueDate):
 async def adminRemoveTask(ctx, courseCode, description):
     try:
         admin.removeTask(courseCode,description)
+        threadDict.pop(courseCode).pop(description).cancel()
         await ctx.send("Successfully removed \""+description+"\" for "+courseCode)
     except Exception as e:
         await ctx.send("FAILED! could not remove task. Error: "+str(e))
@@ -305,13 +309,10 @@ async def start(ctx):
     global t 
     t= asyncio.Task(spam())
 
-
-
 @client.command()
 async def stop(ctx):
     t.cancel()
     print("stoped")
-
 
 
 
