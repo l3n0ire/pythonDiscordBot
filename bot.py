@@ -10,6 +10,7 @@ import admin
 import datetime
 import asyncio
 import time
+from threading import Thread
 
 # load env variables
 from dotenv import load_dotenv
@@ -293,6 +294,24 @@ async def adminNotify(ctx, courseCode):
 @client.command()
 async def time(ctx):
     await ctx.send(datetime.datetime.strftime(datetime.datetime.now(), "%d/%m/%y %H:%M"))
+
+async def spam():
+        print("started")
+        await asyncio.sleep(10)
+        print("hi")
+t= None
+@client.command()
+async def start(ctx):
+    global t 
+    t= asyncio.Task(spam())
+
+
+
+@client.command()
+async def stop(ctx):
+    t.cancel()
+    print("stoped")
+
 
 
 
