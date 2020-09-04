@@ -46,6 +46,9 @@ def loadReminders():
 
 @client.command(brief='deletes all the expired tasks')
 async def deleteOldTasks(ctx):
+    if not isAdmin(ctx.message.author):
+        await ctx.send("You do not have admin permissions")
+        return
     data = admin.getTasks('ALL')
     for course in data:
         for task in course['tasks']:
@@ -212,7 +215,10 @@ async def today(ctx):
 
 # admin stuff
 @client.command(brief="Creates a new course")
-async def adminCreateCourse(ctx, courseCode):
+async def createCourse(ctx, courseCode):
+    if not isAdmin(ctx.message.author):
+        await ctx.send("You do not have admin permissions")
+        return
     try:
         admin.createCourse(courseCode)
         await ctx.send("Successfully added course "+courseCode)
@@ -220,7 +226,10 @@ async def adminCreateCourse(ctx, courseCode):
         await ctx.send("FAILED! could not add course. Error: "+str(e))
 
 @client.command(brief="Adds a new task to a course")
-async def adminAddTask(ctx, courseCode, description, dueDate):
+async def addTask(ctx, courseCode, description, dueDate):
+    if not isAdmin(ctx.message.author):
+        await ctx.send("You do not have admin permissions")
+        return
     try:
         datetime.datetime.strptime(dueDate, "%d/%m/%y %H:%M")
     except ValueError:
@@ -234,7 +243,10 @@ async def adminAddTask(ctx, courseCode, description, dueDate):
         await ctx.send("FAILED! could not add task. Error: "+str(e))
 
 @client.command(brief="Removes a task from a course")
-async def adminRemoveTask(ctx, courseCode, description):
+async def removeTask(ctx, courseCode, description):
+    if not isAdmin(ctx.message.author):
+        await ctx.send("You do not have admin permissions")
+        return
     try:
         admin.removeTask(courseCode,description)
         threadDict.pop(courseCode).pop(description).cancel()
@@ -243,8 +255,11 @@ async def adminRemoveTask(ctx, courseCode, description):
         await ctx.send("FAILED! could not remove task. Error: "+str(e))
 
 @client.command(brief="Edits a task for a course")
-async def adminEditTask(ctx, courseCode, description, newDueDate):
+async def editTask(ctx, courseCode, description, newDueDate):
     user = ctx.message.author
+    if not isAdmin(user):
+        await ctx.send("You do not have admin permissions")
+        return
     try:
         admin.editTask(courseCode,description,newDueDate)
         await ctx.send("Successfully edited due date of \""+ courseCode+" "+description+"\" for "+user.mention+" to \""+newDueDate+"\"")
@@ -254,7 +269,7 @@ async def adminEditTask(ctx, courseCode, description, newDueDate):
         await ctx.send("FAILED! could not remove task. Error: "+str(e))
 
 @client.command(brief="Enrols user to a course")
-async def adminSubscribe(ctx, courseCode):
+async def enroll(ctx, courseCode):
     user = ctx.message.author
     try:
         admin.subscribe(user,courseCode)
@@ -263,7 +278,7 @@ async def adminSubscribe(ctx, courseCode):
         await ctx.send("FAILED! could not subscribe. Error: "+str(e))
 
 @client.command(brief="Unenrols user froms a course")
-async def adminUnsubscribe(ctx, courseCode):
+async def unenroll(ctx, courseCode):
     user = ctx.message.author
     try:
         admin.unsubscribe(user,courseCode)
@@ -272,14 +287,20 @@ async def adminUnsubscribe(ctx, courseCode):
         await ctx.send("FAILED! could not unsubscribe. Error: "+e)
 
 @client.command(brief="Shows subsribers for a course (ALL for all courses)")
-async def adminShowSubscribers(ctx, courseCode):
+async def showSubscribers(ctx, courseCode):
+    if not isAdmin(ctx.message.author):
+        await ctx.send("You do not have admin permissions")
+        return
     try:
         await ctx.send(admin.showSubscribers(courseCode))
     except Exception as e:
         await ctx.send("FAILED! could not show subscribers. Error: "+str(e))
 
 @client.command(brief="Shows tasks for a course (ALL for all courses)")
-async def adminShowTasks(ctx, courseCode):
+async def showTasks(ctx, courseCode):
+    if not isAdmin(ctx.message.author):
+        await ctx.send("You do not have admin permissions")
+        return
     try:
         data=admin.getTasks(courseCode)
         embedList=list()
@@ -316,6 +337,9 @@ async def notify(courseCode, description, dueDate):
 @client.command()
 async def time(ctx):
     await ctx.send(datetime.datetime.strftime(datetime.datetime.now(), "%d/%m/%y %H:%M"))
+
+def isAdmin(user):
+    return client.get_channel(748928662614573090).permissions_for(user).administrator
 
 
     # embed = discord.Embed(
