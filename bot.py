@@ -8,6 +8,7 @@ import json
 import mongo
 import admin
 import datetime
+from datetime import timedelta
 import asyncio
 import time
 from threading import Thread
@@ -33,8 +34,26 @@ m = manage.Manage()
 async def on_ready():
     # When the bot has everything it needs, it is ready    
     loadReminders()
+    timeUntilNine = calculateTimeForDaily()    
     print('Bot is ready.')
+    await dailyRemind(timeUntilNine)
 
+
+def calculateTimeForDaily():
+    tommorow = datetime.datetime.now()
+    morningNine = datetime.datetime(year=tommorow.year, month=tommorow.month, day=tommorow.day, hour=9, minute=0, second=0)
+    return (morningNine - datetime.datetime.now()).seconds
+
+async def dailyRemind(timeUntilNine):
+    await asyncio.sleep(timeUntilNine)
+    while True:
+        data = admin.getTasks('ALL')
+        for course in data:
+            for task in course['tasks']:
+                if datetime.datetime.strptime(task['dueDate'], '%d/%m/%y %H:%M') >= datetime.datetime.now():
+                    await notify(course['courseCode'], task['desc'], task['dueDate'])
+        await asyncio.sleep(24*60*60)
+        
 
 def loadReminders():
     data = admin.getTasks('ALL')
@@ -45,13 +64,13 @@ def loadReminders():
     print('done loading')
 
 @client.command(brief='deletes all the expired tasks')
-async def deleteOldTasks(ctx):
+async def deleteOldTasks(ctx, courseCode):
     if not isAdmin(ctx.message.author):
         await ctx.send("You do not have admin permissions")
         return
     data = admin.getTasks('ALL')
     for course in data:
-        for task in course['tasks']:
+        for task in course['tasks']:                
             if datetime.datetime.strptime(task['dueDate'], '%d/%m/%y %H:%M') < datetime.datetime.now():
                 admin.removeTask(course['courseCode'], task['desc'])
     await ctx.send('Deleted all expired tasks!')
