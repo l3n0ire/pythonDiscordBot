@@ -233,11 +233,11 @@ async def adminEditTask(ctx, courseCode, description, newDueDate):
 @client.command(brief="Enrols user to a course")
 async def adminSubscribe(ctx, courseCode):
     user = ctx.message.author
-    #try:
-    admin.subscribe(user,courseCode)
-        #await ctx.send(user.mention+" successfully enrolled in "+courseCode)
-    #except Exception as e:
-        #await ctx.send("FAILED! could not subscribe. Error: "+str(e))
+    try:
+        admin.subscribe(user,courseCode)
+        await ctx.send(user.mention+" successfully enrolled in "+courseCode)
+    except Exception as e:
+        await ctx.send("FAILED! could not subscribe. Error: "+str(e))
 
 @client.command(brief="Unenrols user froms a course")
 async def adminUnsubscribe(ctx, courseCode):
