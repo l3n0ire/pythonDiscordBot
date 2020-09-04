@@ -44,6 +44,17 @@ def calculateTimeForDaily():
     morningNine = datetime.datetime(year=tommorow.year, month=tommorow.month, day=tommorow.day, hour=9, minute=0, second=0)
     return (morningNine - datetime.datetime.now()).seconds
 
+@client.command(brief='sends message to user\'s dm after the specified time interval')
+async def remind(ctx, message, sleepTime):
+    await asyncio.sleep(float(sleepTime)*60*60)
+    author = ctx.message.author
+    if author.dm_channel == None:
+        dm = await author.create_dm()
+        await dm.send(message)
+    else:
+        await author.dm_channel.send(message)
+        
+
 async def dailyRemind(timeUntilNine):
     await asyncio.sleep(timeUntilNine)
     while True:
