@@ -18,6 +18,7 @@ load_dotenv()
 
 # get token from env variables
 token = os.environ.get("bot_token")
+threadDict = dict()
 
 # set timezone
 # os.environ['TZ'] = 'America/Toronto'
@@ -31,7 +32,16 @@ m = manage.Manage()
 @client.event
 async def on_ready():
     # When the bot has everything it needs, it is ready
+    loadReminders()
     print('Bot is ready.')
+
+def loadReminders():
+    data = admin.getTasks('ALL')
+    for course in data:
+        for task in course['tasks']:
+            if datetime.datetime.strptime(task['dueDate'], '%d/%m/%y %H:%M') >= datetime.datetime.now():
+                threadDict[course['courseCode']] = {task['desc']: asyncio.Task(reminder(task['dueDate'], course['courseCode']))}
+    print('done loading')
 
 @client.event
 async def on_raw_reaction_add(raw):
@@ -204,9 +214,6 @@ async def adminCreateCourse(ctx, courseCode):
         await ctx.send("Successfully added course "+courseCode)
     except Exception as e:
         await ctx.send("FAILED! could not add course. Error: "+str(e))
-
-threadDict = dict()
-
 
 @client.command(brief="Adds a new task to a course")
 async def adminAddTask(ctx, courseCode, description, dueDate):
