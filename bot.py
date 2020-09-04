@@ -22,8 +22,8 @@ token = os.environ.get("bot_token")
 threadDict = dict()
 
 # set timezone
-# os.environ['TZ'] = 'America/Toronto'
-# time.tzset()
+os.environ['TZ'] = 'America/Toronto'
+time.tzset()
 
 
 client = commands.Bot(command_prefix='.')
