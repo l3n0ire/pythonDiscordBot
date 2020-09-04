@@ -31,17 +31,27 @@ m = manage.Manage()
 
 @client.event
 async def on_ready():
-    # When the bot has everything it needs, it is ready
+    # When the bot has everything it needs, it is ready    
     loadReminders()
     print('Bot is ready.')
+
 
 def loadReminders():
     data = admin.getTasks('ALL')
     for course in data:
         for task in course['tasks']:
             if datetime.datetime.strptime(task['dueDate'], '%d/%m/%y %H:%M') >= datetime.datetime.now():
-                threadDict[course['courseCode']] = {task['desc']: asyncio.Task(reminder(task['dueDate'], course['courseCode']))}
+                threadDict[course['courseCode']] = {task['desc']: asyncio.Task(reminder(task['dueDate'], course['courseCode'], task['desc']))}
     print('done loading')
+
+@client.command(brief='deletes all the expired tasks')
+async def deleteOldTasks(ctx):
+    data = admin.getTasks('ALL')
+    for course in data:
+        for task in course['tasks']:
+            if datetime.datetime.strptime(task['dueDate'], '%d/%m/%y %H:%M') < datetime.datetime.now():
+                admin.removeTask(course['courseCode'], task['desc'])
+    await ctx.send('Deleted all expired tasks!')
 
 @client.event
 async def on_raw_reaction_add(raw):
@@ -75,12 +85,6 @@ async def on_raw_reaction_remove(raw):
                 await client.get_channel(raw.channel_id).send(user.mention+" successfully unenrolled from "+courseCode)
             except Exception as e:
                 await client.get_channel(raw.channel_id).send("FAILED! could not unsubscribe. Error: "+str(e))
-        
-
-@client.command()
-async def job(ctx, dt):
-    await reminder(datetime, "WOW")
-    await ctx.send('hi it is now ' + dt)
 
 async def reminder(dt, courseCode,description):
     newDate = datetime.datetime.strptime(dt, '%d/%m/%y %H:%M')
