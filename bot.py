@@ -68,11 +68,14 @@ async def on_raw_reaction_remove(raw):
 
 @client.command()
 async def job(ctx, dt):
+    await reminder(datetime)
+    await ctx.send('hi it is now ' + dt)
+
+async def reminder(dt):
     newDate = datetime.datetime.strptime(dt, '%d/%m/%y %H:%M')
     date1 = datetime.datetime.utcfromtimestamp(newDate.timestamp()) - datetime.datetime.utcnow() 
     timeUntilRemind = date1.total_seconds()
     await asyncio.sleep(timeUntilRemind)
-    await ctx.send('hi it is now' + dt)
 
 def readFile():
     with open("tasks.json") as f:
@@ -210,6 +213,8 @@ async def adminAddTask(ctx, courseCode, description, dueDate):
     try:
         admin.addTask(courseCode,description,dueDate)
         await ctx.send("Successfully added \""+description+"\" due on \""+dueDate+"\" for "+courseCode)
+        await reminder(dueDate)
+        await notify(courseCode)
     except Exception as e:
         await ctx.send("FAILED! could not add task. Error: "+str(e))
 
@@ -270,8 +275,7 @@ async def adminShowTasks(ctx, courseCode):
     except Exception as e:
         await ctx.send("FAILED! could not show tasks. Error: "+str(e))
 
-@client.command()
-async def notify(ctx, courseCode):
+async def notify(courseCode):
     subs = admin.getSubs(courseCode)
     for sub in subs:
         user = client.get_user(sub["id"])
@@ -280,6 +284,11 @@ async def notify(ctx, courseCode):
             await dm.send("hello")
         else:
             await user.dm_channel.send("hello")
+
+@client.command()
+async def adminNotify(ctx, courseCode):
+    await notify(courseCode)
+    
 
 @client.command()
 async def time(ctx):
