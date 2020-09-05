@@ -219,14 +219,16 @@ def createEmbed(course, description, due, status):
 
 @ client.command(brief='Displays all tasks')
 async def all(ctx):
-    data=getAll()
-    eList=list()
+    data=mongo.getDataFromMongo(ctx.message.author.name)
+    embedList=list()
+    for user in data:
+        for course in user["courses"]:
+            for task in course["tasks"]:
+                embed=createEmbed(
+                    course['courseCode'], task['desc'], task['dueDate'], task['status'])
+                embedList.append(embed)
 
-    for d in data:
-        embed=createEmbed(d['course'], d['desc'], d['dueDate'], d['status'])
-        eList.append(embed)
-
-    for embed in eList:
+    for embed in embedList:
         await ctx.send(embed=embed)
 
 @ client.command(brief='displays all tasks due today')
@@ -236,9 +238,10 @@ async def today(ctx):
     for user in data:
         for course in user["courses"]:
             for task in course["tasks"]:
-                embed=createEmbed(
-                    course['courseCode'], task['desc'], task['dueDate'], task['status'])
-                embedList.append(embed)
+                if datetime.datetime.strptime(task['dueDate'], '%d/%m/%y %H:%M') >= datetime.datetime.now():
+                    embed=createEmbed(
+                        course['courseCode'], task['desc'], task['dueDate'], task['status'])
+                    embedList.append(embed)
 
     for embed in embedList:
         await ctx.send(embed=embed)
