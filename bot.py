@@ -365,7 +365,10 @@ async def notify(courseCode, description, dueDate):
             await dm.send(embed=embed)
         else:
             await user.dm_channel.send(embed=embed)
-    
+
+@client.command()
+async def courses(ctx):
+    await ctx.send(admin.getCourses())
 
 @client.command()
 async def time(ctx):

@@ -153,6 +153,15 @@ def getTasks(courseCode):
 def getSubs(courseCode):
     return collection.find_one({"courseCode":courseCode})["subscribers"]
 
+def getCourses():
+    courses = collection.find({})
+    output=""
+    for course in courses:
+        output = output+ course["courseCode"]+", "
+    print("got courses")
+    return output
+
+
 
 
 
